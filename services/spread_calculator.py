@@ -6,13 +6,18 @@ def calculate_spreads(symbols):
     for symbol in symbols:
         prices = get_all_prices(symbol)
         binance_price = prices.pop("binance_futures", None)
-        if len(prices) < 2:
+        valid_prices = {
+            dex: float(price)
+            for dex, price in prices.items()
+            if price is not None and float(price) > 0
+        }
+        if len(valid_prices) < 2:
             continue
 
-        highest_dex = max(prices, key=lambda k: prices[k])
-        lowest_dex = min(prices, key=lambda k: prices[k])
-        highest_price = prices[highest_dex]
-        lowest_price = prices[lowest_dex]
+        highest_dex = max(valid_prices, key=valid_prices.get)
+        lowest_dex = min(valid_prices, key=valid_prices.get)
+        highest_price = valid_prices[highest_dex]
+        lowest_price = valid_prices[lowest_dex]
         spread_percentage = ((highest_price - lowest_price) / lowest_price) * 100
 
         results.append(
