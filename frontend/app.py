@@ -105,23 +105,39 @@ with st.sidebar:
 if df.empty:
     st.info("No arbitrage data returned yet.")
 else:
-    filtered = df[df["spread_percentage"] >= min_spread].copy()
-
-    filtered.columns = [
-        col.replace("_", " ").title() for col in filtered.columns
+    df = df.copy()
+    df.columns = [col.replace("_", " ").title() for col in df.columns]
+    df = df[
+        [
+            "Symbol",
+            "Binance Price",
+            "Binance Fee",
+            "Highest Dex",
+            "Highest Price",
+            "Highest Dex Fee",
+            "Lowest Dex",
+            "Lowest Price",
+            "Lowest Dex Fee",
+            "Spread Percentage",
+            "Total Fee",
+            "Net Spread",
+        ]
     ]
 
     ascending = True if sort_order == "Low to High" else False
-    filtered = filtered.sort_values(
-        by="Spread Percentage",
-        ascending=ascending,
-    )
+    df = df.sort_values(by="Spread Percentage", ascending=ascending)
 
-    numeric_cols = filtered.select_dtypes(include="number").columns
-    filtered[numeric_cols] = filtered[numeric_cols].round(4)
+    numeric_cols = df.select_dtypes(include="number").columns
+    df[numeric_cols] = df[numeric_cols].round(4)
+
+    def color_profit(row):
+        if row["Net Spread"] >= min_spread:
+            return ["background-color: rgba(40, 167, 69, 0.2)"] * len(row)
+        else:
+            return ["background-color: rgba(220, 53, 69, 0.2)"] * len(row)
 
     st.dataframe(
-        filtered,
+        df.style.apply(color_profit, axis=1),
         use_container_width=True,
         hide_index=True,
     )
