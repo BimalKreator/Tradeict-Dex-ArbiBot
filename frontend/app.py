@@ -49,6 +49,12 @@ with st.sidebar:
         step=0.1,
     )
 
+    st.header("Display Options")
+    sort_order = st.radio(
+        "Sort Spread By:",
+        ["High to Low", "Low to High"],
+    )
+
     st.header("API Fetch Filters")
 
     try:
@@ -104,6 +110,12 @@ else:
     filtered.columns = [
         col.replace("_", " ").title() for col in filtered.columns
     ]
+
+    ascending = True if sort_order == "Low to High" else False
+    filtered = filtered.sort_values(
+        by="Spread Percentage",
+        ascending=ascending,
+    )
 
     numeric_cols = filtered.select_dtypes(include="number").columns
     filtered[numeric_cols] = filtered[numeric_cols].round(4)

@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from services.binance_fetcher import get_active_usdt_futures
 from services.token_mapper import map_symbol_to_chains
 from services.price_fetcher import fetch_filtered_prices
-from services.data_streamer import binance_ws_loop, dexscreener_poll_loop
+from services.data_streamer import binance_poll_loop, dexscreener_poll_loop
 from services.spread_calculator import calculate_spreads
 from database.db_manager import init_db, get_mapped_addresses
 from database.redis_manager import get_filters, set_filters
@@ -40,7 +40,7 @@ async def startup_event():
         base_symbol = symbol.replace("USDT", "")
         if not get_mapped_addresses(base_symbol):
             map_symbol_to_chains(base_symbol)
-    asyncio.create_task(binance_ws_loop())
+    asyncio.create_task(binance_poll_loop())
     asyncio.create_task(dexscreener_poll_loop(top_50))
 
 
