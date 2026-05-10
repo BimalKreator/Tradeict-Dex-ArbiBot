@@ -1,18 +1,20 @@
 import asyncio
 import json
+import traceback
 
 import websockets
 
 from database.redis_manager import set_price
 from services.price_fetcher import fetch_filtered_prices
 
-_BINANCE_FUTURES_MINI_TICKER_WS = "wss://fstream.binance.com/ws/!miniTicker@arr"
-
 
 async def binance_ws_loop():
     while True:
         try:
-            async with websockets.connect(_BINANCE_FUTURES_MINI_TICKER_WS) as ws:
+            async with websockets.connect(
+                "wss://fstream.binance.com/ws/!miniTicker@arr",
+                ping_interval=None,
+            ) as ws:
                 print("Binance WS Connected!")
                 async for raw in ws:
                     try:
@@ -31,6 +33,7 @@ async def binance_ws_loop():
                             print(f"Binance Update: {symbol} -> {price}")
         except Exception as e:
             print(f"Binance WS Error: {e}")
+            traceback.print_exc()
             await asyncio.sleep(5)
 
 
