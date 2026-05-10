@@ -13,10 +13,15 @@ async def binance_ws_loop():
         try:
             async with websockets.connect(
                 "wss://fstream.binance.com/ws/!miniTicker@arr",
-                ping_interval=None,
+                ping_interval=20,
+                ping_timeout=20,
             ) as ws:
                 print("Binance WS Connected!")
+                iteration = 0
                 async for raw in ws:
+                    iteration += 1
+                    if iteration % 100 == 0:
+                        print("Binance WS receiving data...")
                     try:
                         data = json.loads(raw)
                     except json.JSONDecodeError:
@@ -29,8 +34,6 @@ async def binance_ws_loop():
                         if symbol is None or price is None:
                             continue
                         set_price(symbol, "binance_futures", price)
-                        if symbol in ["SOLUSDT", "ETHUSDT"]:
-                            print(f"Binance Update: {symbol} -> {price}")
         except Exception as e:
             print(f"Binance WS Error: {e}")
             traceback.print_exc()

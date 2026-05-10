@@ -33,3 +33,18 @@ def get_all_prices(symbol):
             continue
         result[exchange_name] = float(raw)
     return result
+
+
+def set_filters(min_liquidity: float, min_volume: float) -> None:
+    redis_client.set("filter:liquidity", str(min_liquidity))
+    redis_client.set("filter:volume", str(min_volume))
+
+
+def get_filters():
+    liq_raw = redis_client.get("filter:liquidity")
+    vol_raw = redis_client.get("filter:volume")
+    defaults = {"min_liquidity": 50000.0, "min_volume": 10000.0}
+    return {
+        "min_liquidity": float(liq_raw) if liq_raw is not None else defaults["min_liquidity"],
+        "min_volume": float(vol_raw) if vol_raw is not None else defaults["min_volume"],
+    }

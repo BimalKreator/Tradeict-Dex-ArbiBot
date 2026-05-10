@@ -1,16 +1,19 @@
 import requests
 
 from database.db_manager import get_mapped_addresses
+from database.redis_manager import get_filters
 
 _MAX_ADDRESSES_PER_REQUEST = 30
-_MIN_LIQUIDITY_USD = 50000
-_MIN_VOLUME_H24 = 10000
 
 
 def fetch_filtered_prices(symbol):
     addresses = get_mapped_addresses(symbol)
     if not addresses:
         return []
+
+    filters = get_filters()
+    min_liquidity = filters["min_liquidity"]
+    min_volume = filters["min_volume"]
 
     batch = addresses[:_MAX_ADDRESSES_PER_REQUEST]
     joined = ",".join(batch)
@@ -28,7 +31,7 @@ def fetch_filtered_prices(symbol):
         vol_h24 = volume.get("h24")
         if liq_usd is None or vol_h24 is None:
             continue
-        if float(liq_usd) <= _MIN_LIQUIDITY_USD or float(vol_h24) <= _MIN_VOLUME_H24:
+        if float(liq_usd) <= min_liquidity or float(vol_h24) <= min_volume:
             continue
 
         filtered.append(
