@@ -1,18 +1,28 @@
-import psycopg2
 import os
+import time
+
+import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+
 def init_db():
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    with open("database/schema.sql", "r", encoding="utf-8") as f:
-        cur.execute(f.read())
-    conn.commit()
-    cur.close()
-    conn.close()
+    for _ in range(10):
+        try:
+            conn = psycopg2.connect(DATABASE_URL)
+            cur = conn.cursor()
+            with open("database/schema.sql", "r", encoding="utf-8") as f:
+                cur.execute(f.read())
+            conn.commit()
+            cur.close()
+            conn.close()
+            print("Database initialized successfully!")
+            break
+        except psycopg2.OperationalError:
+            print("Database not ready, retrying in 3 seconds...")
+            time.sleep(3)
 
 
 def save_token_mapping(symbol, network, contract_address, liquidity):
